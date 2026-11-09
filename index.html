@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-4Ug/QFDulqu3XjL62dYPU/K80AcT+LfsyCARmpI+9js='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pensum">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Pensum</title>
+<!-- Pensum : todo list mobile par projets. Code généré par Claude.ai. -->
+<meta name="theme-color" content="#1f6b57">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout : une colonne étroite, en-tête collant, barre de saisie collante, sections repliables */
+:root{
+  --bg:#eef1ef; --surface:#ffffff; --fg:#18211e; --muted:#5d6b66; --line:#d5ddd9;
+  --accent:#1f6b57; --accent-ink:#ffffff; --accent-soft:#dcebe5;
+  --prog:#b07d0c; --up:#b4531a; --down:#5b7a95; --danger:#b3261e;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111715; --surface:#1a2320; --fg:#e4ebe8; --muted:#93a29c; --line:#2c3833;
+  --accent:#4fb393; --accent-ink:#0b1512; --accent-soft:#1f3a31;
+  --prog:#e0b440; --up:#e58a4f; --down:#8eabc4; --danger:#f2867d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --surface:#1a2320; --fg:#e4ebe8; --muted:#93a29c; --line:#2c3833;
+  --accent:#4fb393; --accent-ink:#0b1512; --accent-soft:#1f3a31;
+  --prog:#e0b440; --up:#e58a4f; --down:#8eabc4; --danger:#f2867d; color-scheme:dark}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.app{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+
+/* En-tête */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:10px;padding-block:10px 8px}
+.top h1{font-family:var(--display);font-weight:700;font-size:1.35rem;letter-spacing:-.01em;margin:0;flex:1;min-width:0;line-height:1.15;text-wrap:balance;overflow-wrap:anywhere}
+.top h1 .par{display:block;font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--muted);letter-spacing:.02em}
+.icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--fg);background:var(--surface);border:1px solid var(--line)}
+.icon svg{width:20px;height:20px}
+
+/* Saisie rapide */
+.stick{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.stick .top{position:static}
+.qa{padding-bottom:10px}
+.qa-row{display:flex;gap:6px;align-items:center}
+.qa input{flex:1;min-width:0;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px;font-size:16px}
+.qa input:focus{border-color:var(--accent);outline:none}
+.add{width:44px;height:44px;flex:none;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.add svg{width:22px;height:22px}
+.tog{width:36px;height:44px;flex:none;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;font-size:1.05rem;font-weight:700}
+.tog svg{width:18px;height:18px}
+.tog.up[aria-pressed="true"]{background:var(--up);border-color:var(--up);color:var(--bg)}
+.tog.down[aria-pressed="true"]{background:var(--down);border-color:var(--down);color:var(--bg)}
+.tog.later[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* Listes */
+.sec{margin-top:6px}
+.sec-h{display:flex;align-items:center;gap:8px;width:100%;padding:8px 2px 4px;font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.sec-h .n{font-variant-numeric:tabular-nums;font-weight:400}
+.sec-h svg{width:14px;height:14px;transition:transform .15s}
+.sec-h[aria-expanded="false"] svg{transform:rotate(-90deg)}
+ul{list-style:none;margin:0;padding:0}
+.todo{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:4px;min-height:46px}
+.st{width:44px;height:44px;flex:none;display:grid;place-items:center}
+.st i{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);display:block;position:relative}
+.st.encours i{border-color:var(--prog);background:linear-gradient(90deg,var(--prog) 50%,transparent 50%)}
+.st.fait i{border-color:var(--accent);background:var(--accent)}
+.st.fait i::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.ttl{flex:1;min-width:0;text-align:left;padding:7px 4px;display:flex;flex-direction:column;gap:1px;overflow-wrap:anywhere}
+.ttl small{color:var(--muted);font-size:.74rem}
+.ttl .has-notes{color:var(--muted);font-size:.78rem}
+.fait .ttl span{text-decoration:line-through;color:var(--muted)}
+.pr{width:28px;flex:none;text-align:center;font-weight:700}
+.pr.up{color:var(--up)}.pr.down{color:var(--down)}
+.empty{color:var(--muted);padding:10px 4px;font-size:.9rem}
+
+/* Accueil */
+.proj{display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:4px;min-height:46px}
+.proj .car{width:36px;height:46px;display:grid;place-items:center;color:var(--muted);flex:none}
+.proj .car svg{width:16px;height:16px;transition:transform .15s}
+.proj .car[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.proj .open{flex:1;min-width:0;text-align:left;padding:11px 4px;font-weight:700;overflow-wrap:anywhere}
+.proj .cnt{font-variant-numeric:tabular-nums;color:var(--muted);min-width:28px;text-align:right}
+.proj .more{width:44px;height:46px;color:var(--muted);flex:none;font-size:1.3rem;letter-spacing:1px}
+.proj.all{background:var(--accent-soft);border-color:transparent}
+.proj.dflt .open::after{content:"par défaut";font-weight:400;font-size:.72rem;color:var(--muted);margin-left:8px;text-transform:uppercase;letter-spacing:.06em}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{height:40px;padding:0 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);font-weight:700}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.dng{color:var(--danger)}
+.note{background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin:2px 0 8px;font-size:.86rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.note p{margin:0;flex:1;min-width:180px}
+.note.inst{background:var(--surface);border:1px solid var(--line)}
+.note.inst b{color:var(--accent)}
+hr.sep{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
+
+/* Feuilles (fiche, confirmations) */
+.veil{position:fixed;inset:0;background:rgba(10,16,14,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.veil.full{align-items:stretch;background:var(--bg)}
+.sheet.full{height:100%;max-height:none;border-radius:0;box-sizing:border-box;padding-top:calc(10px + env(safe-area-inset-top,0px));grid-template-rows:auto auto auto minmax(160px,1fr) auto auto;align-content:stretch}
+.sheet.full .notes{display:flex}
+.sheet.full .notes textarea{flex:1;min-height:0;height:auto}
+.sheet h2{font-family:var(--display);font-size:1.3rem;margin:0}
+.fld{display:grid;gap:4px}
+.fld>label,.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.fld input,.fld select,.fld textarea{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px;width:100%;box-sizing:border-box;font-size:16px}
+.fld textarea{min-height:110px;resize:vertical;font-size:16px}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.seg button{flex:1;height:38px;font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.steps li{display:flex;gap:10px;align-items:flex-start;padding:3px 0}
+.steps input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.steps .d{text-decoration:line-through;color:var(--muted)}
+.meta{font-size:.74rem;color:var(--muted);margin:0}
+.sh{display:flex;gap:4px;align-items:flex-start}
+.sh .ti{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:1.15rem;border:1px solid transparent;border-radius:10px;background:transparent;padding:6px 8px;margin-left:-8px;resize:none;overflow:hidden;line-height:1.25}
+.sh .ti:focus{border-color:var(--line);background:var(--surface);outline:none}
+.ib{width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.ib svg{width:19px;height:19px}
+.ib.del:hover,.ib.del:focus-visible{color:var(--danger)}
+.opts{display:flex;gap:6px;align-items:center}
+.opts select{flex:1;min-width:0;height:44px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 8px;font-size:16px}
+.toast{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));margin:0 auto;width:fit-content;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);border-radius:var(--r);padding:10px 10px 10px 16px;display:flex;gap:14px;align-items:center;max-width:560px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.toast button{color:var(--bg);font-weight:700;text-decoration:underline;padding:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="layer"></div>
+
+<script>
+"use strict";
+const APP_VERSION = "0.4";
+const KEY = "pensum.v1";
+const IN_ARTIFACT = false;
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const now = () => Date.now();
+const ICON = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  later: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9s8 4 8 9"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  car: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg>'
+};
+const STATUS = ["ouvert", "encours", "fait"];
+const STATUS_LBL = {ouvert: "Ouvert", encours: "En cours", fait: "Fait"};
+
+/* ---------- Données ---------- */
+function blank() {
+  return {schema: 1, defaultProject: "Vie", projects: ["Vie"], todos: [], active: null,
+          ui: {collapsed: [], open: {}}, sample: false, persistAsked: false, updated: now()};
+}
+function sample() {
+  const d = blank();
+  d.sample = true;
+  d.projects = ["Vie", "maison", "boulot", "boulot/gnns"];
+  const t = (title, project, o = {}) => d.todos.push(Object.assign({id: uid(), title, project, status: "ouvert",
+    prio: 0, later: false, notes: "", created: now() - Math.random() * 1e8, updated: now(), doneAt: null}, o));
+  t("Acheter du shampoing", "Vie");
+  t("Rappeler le garage", "Vie", {prio: 1});
+  t("Repeindre les volets de Saint-Maixme", "maison", {later: true,
+    notes: "Ponçage d'abord, vérifier l'état des gonds.\n- [ ] Choisir la teinte\n- [ ] Acheter lasure et pinceaux\n- [ ] Poncer"});
+  t("Réparer la chasse d'eau", "maison", {status: "encours"});
+  t("Relire le papier GNN", "boulot/gnns", {prio: 1});
+  t("Tester l'encodage des arêtes", "boulot/gnns", {status: "fait", doneAt: now() - 3e6});
+  t("Préparer le point d'équipe", "boulot", {prio: -1});
+  return d;
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { const d = JSON.parse(raw); if (d && d.schema === 1) return d; }
+  } catch (e) {}
+  return sample();
+}
+let S = load();
+function save() {
+  S.updated = now();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+}
+
+/* ---------- Projets ---------- */
+function allPaths() {
+  const set = new Set([S.defaultProject]);
+  for (const p of S.projects) { const parts = p.split("/"); for (let i = 1; i <= parts.length; i++) set.add(parts.slice(0, i).join("/")); }
+  for (const t of S.todos) set.add(t.project);
+  const arr = [...set];
+  arr.sort((a, b) => a === S.defaultProject ? -1 : b === S.defaultProject ? 1 : a.localeCompare(b, "fr"));
+  return arr;
+}
+const inProject = (t, p) => p === "*" || t.project === p || t.project.startsWith(p + "/");
+const activeCount = p => S.todos.filter(t => inProject(t, p) && t.status !== "fait" && !t.later).length;
+function cleanPath(s) { return s.split("/").map(x => x.trim()).filter(Boolean).join("/"); }
+function addProject(path) {
+  path = cleanPath(path);
+  if (!path) return null;
+  if (!S.projects.includes(path)) S.projects.push(path);
+  return path;
+}
+
+/* ---------- Rendu ---------- */
+function render() {
+  if (S.active !== null && S.active !== "*" && !allPaths().includes(S.active)) S.active = null;
+  S.active === null ? renderHome() : renderProject(S.active);
+}
+
+function renderHome() {
+  const paths = allPaths();
+  const collapsed = new Set(S.ui.collapsed);
+  const hasKids = p => paths.some(q => q.startsWith(p + "/"));
+  const hidden = p => { const parts = p.split("/"); for (let i = 1; i < parts.length; i++) if (collapsed.has(parts.slice(0, i).join("/"))) return true; return false; };
+  let rows = `<li class="proj all"><span class="car"></span><button class="open" data-open="*">Tout</button><span class="cnt">${activeCount("*")}</span><span class="more"></span></li>`;
+  for (const p of paths) {
+    if (hidden(p)) continue;
+    const depth = p.split("/").length - 1, name = p.split("/").pop();
+    const kids = hasKids(p);
+    rows += `<li class="proj${p === S.defaultProject ? " dflt" : ""}" style="margin-left:${depth * 22}px">
+      ${kids ? `<button class="car" data-fold="${esc(p)}" aria-expanded="${!collapsed.has(p)}" aria-label="Replier ${esc(name)}">${ICON.car}</button>` : `<span class="car"></span>`}
+      <button class="open" data-open="${esc(p)}">${esc(name)}</button>
+      <span class="cnt">${activeCount(p)}</span>
+      <button class="more" data-manage="${esc(p)}" aria-label="Gérer ${esc(name)}">⋯</button></li>`;
+  }
+  $("#app").innerHTML = `
+    <header class="top"><h1>Projets</h1>
+      <button class="icon" id="menu" aria-label="Sauvegarde">${ICON.more}</button></header>
+    ${installBanner()}
+    ${S.sample ? `<div class="note"><p>Ces projets et todos sont des exemples, pour voir l'appli en situation.</p><button class="btn" id="clear-sample">Effacer les exemples</button></div>` : ""}
+    <ul>${rows}</ul>
+    <div class="bar"><button class="btn pri" id="new-proj">Nouveau projet</button></div>`;
+  $("#menu").onclick = openBackup;
+  wireInstallBanner();
+  $("#new-proj").onclick = () => projectSheet(null);
+  const cs = $("#clear-sample");
+  if (cs) cs.onclick = () => confirmSheet("Effacer les exemples ?", "Tous les projets et todos d'exemple seront supprimés.", "Effacer", () => { S = blank(); save(); render(); });
+  $("#app").querySelectorAll("[data-open]").forEach(b => b.onclick = () => { S.active = b.dataset.open; save(); render(); window.scrollTo(0, 0); });
+  $("#app").querySelectorAll("[data-fold]").forEach(b => b.onclick = () => {
+    const p = b.dataset.fold, i = S.ui.collapsed.indexOf(p);
+    i < 0 ? S.ui.collapsed.push(p) : S.ui.collapsed.splice(i, 1); save(); renderHome();
+  });
+  $("#app").querySelectorAll("[data-manage]").forEach(b => b.onclick = () => projectSheet(b.dataset.manage));
+}
+
+let qa = {prio: 0, later: false, text: ""};
+function sortActive(a, b) {
+  return (b.status === "encours") - (a.status === "encours") || b.prio - a.prio || a.created - b.created;
+}
+function renderProject(p) {
+  const all = p === "*";
+  const parts = all ? [] : p.split("/");
+  const name = all ? "Tout" : parts.pop();
+  const par = all ? "" : parts.join(" / ");
+  const list = S.todos.filter(t => inProject(t, p));
+  const act = list.filter(t => t.status !== "fait" && !t.later).sort(sortActive);
+  const later = list.filter(t => t.status !== "fait" && t.later).sort(sortActive);
+  const done = list.filter(t => t.status === "fait").sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+  const open = S.ui.open[p] || {};
+  const sec = (key, label, items, defOpen) => {
+    const isOpen = open[key] ?? defOpen;
+    return `<section class="sec"><button class="sec-h" data-sec="${key}" aria-expanded="${isOpen}">${ICON.car}${label} <span class="n">${items.length}</span></button>
+      ${isOpen ? (items.length ? `<ul>${items.map(t => row(t, p)).join("")}</ul>` : `<p class="empty">${key === "act" ? "Rien d'actif ici. Ajoute un todo avec le champ ci-dessus." : "Aucun."}</p>`) : ""}</section>`;
+  };
+  $("#app").innerHTML = `
+    <div class="stick"><header class="top"><button class="icon" id="home" aria-label="Accueil">${ICON.home}</button>
+      <h1>${par ? `<span class="par">${esc(par)}</span>` : ""}${esc(name)}</h1></header>
+    <form class="qa" id="qa" autocomplete="off">
+      <div class="qa-row"><input id="qa-text" enterkeyhint="done" placeholder="Nouveau todo${all ? " (→ " + esc(S.defaultProject) + ")" : ""}" value="${esc(qa.text)}" aria-label="Titre du todo">
+        <button type="button" class="tog down" id="qa-down" aria-label="Priorité basse">↓</button>
+        <button type="button" class="tog up" id="qa-up" aria-label="Priorité haute">↑</button>
+        <button type="button" class="tog later" id="qa-later" aria-label="Plus tard" aria-pressed="${qa.later}">${ICON.later}</button>
+        <button class="add" type="submit" aria-label="Ajouter">${ICON.plus}</button></div>
+    </form></div>
+    ${sec("act", "Actifs", act, true)}
+    ${sec("later", "Plus tard", later, false)}
+    ${sec("done", "Terminés", done, false)}`;
+  paintQaPrio();
+  $("#home").onclick = () => { S.active = null; save(); render(); window.scrollTo(0, 0); };
+  $("#qa-text").oninput = e => qa.text = e.target.value;
+  $("#qa-down").onclick = () => { qa.prio = qa.prio === -1 ? 0 : -1; paintQaPrio(); };
+  $("#qa-up").onclick = () => { qa.prio = qa.prio === 1 ? 0 : 1; paintQaPrio(); };
+  $("#qa-later").onclick = e => { qa.later = !qa.later; e.currentTarget.setAttribute("aria-pressed", qa.later); };
+  $("#qa").onsubmit = e => {
+    e.preventDefault();
+    const title = $("#qa-text").value.trim();
+    if (!title) return;
+    S.todos.push({id: uid(), title, project: all ? S.defaultProject : p, status: "ouvert", prio: qa.prio,
+      later: qa.later, notes: "", created: now(), updated: now(), doneAt: null});
+    qa = {prio: 0, later: false, text: ""};
+    save(); renderProject(p); $("#qa-text").focus();
+  };
+  $("#app").querySelectorAll("[data-sec]").forEach(b => b.onclick = () => {
+    const k = b.dataset.sec; S.ui.open[p] = Object.assign({}, S.ui.open[p], {[k]: b.getAttribute("aria-expanded") !== "true"});
+    save(); renderProject(p);
+  });
+  $("#app").querySelectorAll("[data-st]").forEach(b => b.onclick = () => cycleStatus(b.dataset.st));
+  $("#app").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => todoSheet(b.dataset.edit));
+}
+function paintQaPrio() {
+  $("#qa-up").setAttribute("aria-pressed", qa.prio === 1);
+  $("#qa-down").setAttribute("aria-pressed", qa.prio === -1);
+}
+function row(t, p) {
+  const sub = t.project !== p ? (p === "*" ? t.project : t.project.slice(p.length + 1)) : "";
+  const steps = (t.notes.match(/^\s*- \[[ xX]\]/gm) || []).length;
+  const doneSteps = (t.notes.match(/^\s*- \[[xX]\]/gm) || []).length;
+  const hint = steps ? `${doneSteps}/${steps} étapes` : t.notes.trim() ? "notes" : "";
+  return `<li class="todo ${t.status}">
+    <button class="st ${t.status}" data-st="${t.id}" aria-label="Statut : ${STATUS_LBL[t.status]}, toucher pour changer"><i></i></button>
+    <button class="ttl" data-edit="${t.id}"><span>${esc(t.title)}</span>${sub || hint ? `<small>${esc([sub, hint].filter(Boolean).join(" · "))}</small>` : ""}</button>
+    <span class="pr ${t.prio > 0 ? "up" : t.prio < 0 ? "down" : ""}" aria-label="${t.prio > 0 ? "Priorité haute" : t.prio < 0 ? "Priorité basse" : ""}">${t.prio > 0 ? "↑" : t.prio < 0 ? "↓" : ""}</span></li>`;
+}
+
+/* ---------- Actions ---------- */
+const byId = id => S.todos.find(t => t.id === id);
+function setStatus(t, st) {
+  t.status = st; t.updated = now(); t.doneAt = st === "fait" ? now() : null;
+}
+function cycleStatus(id) {
+  const t = byId(id); if (!t) return;
+  const before = {...t};
+  setStatus(t, STATUS[(STATUS.indexOf(t.status) + 1) % 3]);
+  save(); render();
+  toast(`« ${t.title} » : ${STATUS_LBL[t.status].toLowerCase()}`, () => { Object.assign(t, before); save(); render(); });
+}
+let toastTimer;
+function toast(msg, undo) {
+  clearTimeout(toastTimer);
+  let el = $("#toast");
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button>Annuler</button>' : ""}`;
+  el.hidden = false;
+  if (undo) el.querySelector("button").onclick = () => { undo(); el.hidden = true; };
+  toastTimer = setTimeout(() => el.hidden = true, 5000);
+}
+
+/* ---------- Feuilles ---------- */
+function sheet(html, onClose, full) {
+  const layer = $("#layer");
+  layer.innerHTML = `<div class="veil${full ? " full" : ""}"><div class="sheet${full ? " full" : ""}" role="dialog" aria-modal="true">${html}</div></div>`;
+  const veil = layer.firstChild;
+  const close = () => { layer.innerHTML = ""; onClose && onClose(); };
+  veil.addEventListener("click", e => { if (e.target === veil) close(); });
+  return {root: veil.firstChild, close};
+}
+function confirmSheet(title, text, ok, fn) {
+  const s = sheet(`<h2>${esc(title)}</h2><p style="margin:0">${esc(text)}</p>
+    <div class="row"><button class="btn dng" id="ok">${esc(ok)}</button><button class="btn" id="ko">Annuler</button></div>`);
+  $("#ok", s.root).onclick = () => { s.close(); fn(); };
+  $("#ko", s.root).onclick = s.close;
+}
+
+function todoSheet(id) {
+  const t = byId(id); if (!t) return;
+  const paths = allPaths();
+  const s = sheet(`
+    <div class="sh"><textarea id="f-title" class="ti" rows="1" aria-label="Titre">${esc(t.title)}</textarea>
+      <button class="ib del" id="f-del" aria-label="Supprimer le todo">${ICON.trash}</button>
+      <button class="ib" id="f-close" aria-label="Fermer">${ICON.close}</button></div>
+    <div class="seg" id="f-st" aria-label="Statut">${STATUS.map(x => `<button type="button" data-v="${x}" aria-pressed="${t.status === x}">${STATUS_LBL[x]}</button>`).join("")}</div>
+    <div class="opts">
+      <button type="button" class="tog down" id="f-down" aria-label="Priorité basse">↓</button>
+      <button type="button" class="tog up" id="f-up" aria-label="Priorité haute">↑</button>
+      <button type="button" class="tog later" id="f-later" aria-label="Plus tard" aria-pressed="${t.later}">${ICON.later}</button>
+      <select id="f-proj" aria-label="Projet">${paths.map(x => `<option ${x === t.project ? "selected" : ""}>${esc(x)}</option>`).join("")}<option value="__new">Nouveau projet…</option></select>
+    </div>
+    <div class="fld notes"><textarea id="f-notes" aria-label="Notes" placeholder="Description, réflexions… Une ligne « - [ ] étape » devient une case à cocher.">${esc(t.notes)}</textarea></div>
+    <ul class="steps" id="f-steps"></ul>
+    <p class="meta">Créé le ${new Date(t.created).toLocaleDateString("fr-FR")}${t.doneAt ? ", fait le " + new Date(t.doneAt).toLocaleDateString("fr-FR") : ""}</p>
+    `, () => render(), true);
+  const r = s.root, touch = () => { t.updated = now(); save(); };
+  const paintPrio = () => { $("#f-up", r).setAttribute("aria-pressed", t.prio === 1); $("#f-down", r).setAttribute("aria-pressed", t.prio === -1); };
+  const paintSteps = () => {
+    const lines = t.notes.split("\n"), items = [];
+    lines.forEach((l, i) => { const m = l.match(/^(\s*)- \[([ xX])\] (.*)$/); if (m) items.push({i, done: m[2] !== " ", text: m[3]}); });
+    $("#f-steps", r).innerHTML = items.map(x => `<li><input type="checkbox" id="step-${x.i}" data-line="${x.i}" ${x.done ? "checked" : ""}><label for="step-${x.i}" class="${x.done ? "d" : ""}">${esc(x.text)}</label></li>`).join("");
+    r.querySelectorAll("[data-line]").forEach(cb => cb.onchange = () => {
+      const ls = t.notes.split("\n"), i = +cb.dataset.line;
+      ls[i] = ls[i].replace(/- \[[ xX]\]/, cb.checked ? "- [x]" : "- [ ]");
+      t.notes = ls.join("\n"); $("#f-notes", r).value = t.notes; touch(); paintSteps();
+    });
+  };
+  paintPrio(); paintSteps();
+  const ti = $("#f-title", r), fit = () => { ti.style.height = "auto"; ti.style.height = ti.scrollHeight + "px"; };
+  fit();
+  ti.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); ti.blur(); } };
+  ti.oninput = () => { ti.value = ti.value.replace(/\n/g, " "); fit(); const v = ti.value.trim(); if (v) { t.title = v; touch(); } };
+  r.querySelectorAll("#f-st button").forEach(b => b.onclick = () => {
+    setStatus(t, b.dataset.v); save();
+    r.querySelectorAll("#f-st button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  });
+  $("#f-down", r).onclick = () => { t.prio = t.prio === -1 ? 0 : -1; touch(); paintPrio(); };
+  $("#f-up", r).onclick = () => { t.prio = t.prio === 1 ? 0 : 1; touch(); paintPrio(); };
+  $("#f-later", r).onclick = e => { t.later = !t.later; touch(); e.currentTarget.setAttribute("aria-pressed", t.later); };
+  $("#f-proj", r).onchange = e => {
+    if (e.target.value === "__new") { s.close(); projectSheet(null, t.id); return; }
+    t.project = e.target.value; touch();
+  };
+  $("#f-notes", r).oninput = e => { t.notes = e.target.value; touch(); paintSteps(); };
+  $("#f-close", r).onclick = s.close;
+  $("#f-del", r).onclick = () => {
+    const idx = S.todos.indexOf(t), copy = {...t};
+    s.close(); S.todos.splice(idx, 1); save(); render();
+    toast(`« ${copy.title} » supprimé`, () => { S.todos.splice(idx, 0, copy); save(); render(); });
+  };
+}
+
+function projectSheet(path, moveTodoId) {
+  const isNew = path === null;
+  const isDefault = path === S.defaultProject;
+  const s = sheet(`
+    <h2>${isNew ? "Nouveau projet" : esc(path)}</h2>
+    <div class="fld"><label for="p-name">${isNew ? "Nom" : "Renommer en"}</label><input id="p-name" value="${isNew ? "" : esc(path)}" placeholder="ex. boulot/gnns"></div>
+    <p class="meta">Utilise « / » pour un sous-projet : boulot/gnns se range sous boulot.</p>
+    <div class="row"><button class="btn pri" id="p-ok">${isNew ? "Créer" : "Renommer"}</button>
+      ${!isNew ? `<button class="btn" id="p-sub">Ajouter un sous-projet</button>` : ""}
+      ${!isNew && !isDefault ? `<button class="btn dng" id="p-del">Supprimer</button>` : ""}</div>`);
+  const r = s.root;
+  $("#p-name", r).focus();
+  if (isNew) $("#p-name", r).value = "";
+  $("#p-ok", r).onclick = () => {
+    const v = cleanPath($("#p-name", r).value);
+    if (!v) return;
+    if (isNew) {
+      addProject(v);
+      if (moveTodoId) { const t = byId(moveTodoId); if (t) { t.project = v; t.updated = now(); } }
+    } else if (v !== path) renameProject(path, v);
+    save(); s.close(); render();
+    if (moveTodoId) todoSheet(moveTodoId);
+  };
+  const sub = $("#p-sub", r);
+  if (sub) sub.onclick = () => { $("#p-name", r).value = path + "/"; $("#p-ok", r).textContent = "Créer"; $("#p-ok", r).onclick = () => { const v = addProject($("#p-name", r).value); if (v) { save(); s.close(); render(); } }; $("#p-name", r).focus(); };
+  const del = $("#p-del", r);
+  if (del) del.onclick = () => {
+    const n = S.todos.filter(t => inProject(t, path)).length;
+    s.close();
+    confirmSheet(`Supprimer « ${path} » ?`, `Ses sous-projets sont supprimés aussi. ${n} todo${n > 1 ? "s" : ""} rejoindr${n > 1 ? "ont" : "a"} « ${S.defaultProject} ».`, "Supprimer", () => {
+      S.todos.forEach(t => { if (inProject(t, path)) { t.project = S.defaultProject; t.updated = now(); } });
+      S.projects = S.projects.filter(p => !(p === path || p.startsWith(path + "/")));
+      if (S.active && S.active !== "*" && (S.active === path || S.active.startsWith(path + "/"))) S.active = null;
+      save(); render();
+    });
+  };
+}
+function renameProject(from, to) {
+  const re = p => p === from ? to : p.startsWith(from + "/") ? to + p.slice(from.length) : p;
+  S.projects = [...new Set(S.projects.map(re))];
+  S.todos.forEach(t => { const n = re(t.project); if (n !== t.project) { t.project = n; t.updated = now(); } });
+  if (S.defaultProject === from) S.defaultProject = to;
+  if (S.active && S.active !== "*") S.active = re(S.active);
+  S.ui.collapsed = S.ui.collapsed.map(re);
+}
+
+/* ---------- Sauvegarde ---------- */
+function openBackup() {
+  const json = JSON.stringify(S, null, 1);
+  const s = sheet(`
+    <h2>Sauvegarde</h2>
+    <p class="meta" style="margin:0">Tes données restent sur ce téléphone. Exporte-les régulièrement pour en garder une copie.</p>
+    <div class="fld"><label for="b-out">Export (${S.todos.length} todos)</label><textarea id="b-out" readonly>${esc(json)}</textarea></div>
+    <div class="row"><button class="btn pri" id="b-copy">Copier</button>${IN_ARTIFACT ? "" : `<button class="btn" id="b-dl">Télécharger le fichier</button>`}</div>
+    <div class="fld"><label for="b-in">Import : colle un export ou choisis un fichier</label><textarea id="b-in" placeholder="{ … }"></textarea><input type="file" id="b-file" accept=".json,application/json"></div>
+    <div class="row"><button class="btn dng" id="b-imp">Remplacer mes données</button><button class="btn" id="b-close">Fermer</button></div>
+    ${HOSTED ? `<hr class="sep"><div class="row"><span class="meta" style="flex:1">Pensum version ${APP_VERSION}</span><button class="btn" id="b-upd">Mettre à jour l'application</button></div>` : ""}`);
+  const r = s.root;
+  $("#b-copy", r).onclick = e => {
+    const b = e.currentTarget;
+    navigator.clipboard.writeText(json).then(() => b.textContent = "Copié", () => { $("#b-out", r).select(); b.textContent = "Texte sélectionné"; });
+  };
+  const dl = $("#b-dl", r);
+  if (dl) dl.onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([json], {type: "application/json"}));
+    a.download = `pensum-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+  };
+  $("#b-file", r).onchange = e => { const f = e.target.files[0]; if (f) f.text().then(x => $("#b-in", r).value = x); };
+  $("#b-imp", r).onclick = () => {
+    let d;
+    try { d = JSON.parse($("#b-in", r).value); } catch (e) { toast("Import impossible : le texte n'est pas un export Pensum valide."); return; }
+    d = sanitize(d);
+    if (!d) { toast("Import impossible : format non reconnu."); return; }
+    s.close();
+    confirmSheet("Remplacer toutes les données ?", `Les ${S.todos.length} todos actuels seront remplacés par les ${d.todos.length} de l'import.`, "Remplacer", () => { S = d; save(); render(); toast("Import terminé"); });
+  };
+  $("#b-close", r).onclick = s.close;
+  const upd = $("#b-upd", r);
+  if (upd) upd.onclick = () => { s.close(); updateApp(); };
+}
+
+/* Nettoie un export importé : types forcés, champs inconnus ignorés. */
+function sanitize(d) {
+  if (!d || d.schema !== 1 || !Array.isArray(d.todos)) return null;
+  const str = (x, max) => typeof x === "string" ? x.slice(0, max) : "";
+  const num = x => Number.isFinite(x) ? x : now();
+  const path = x => cleanPath(str(x, 300));
+  const out = blank();
+  out.defaultProject = path(d.defaultProject) || "Vie";
+  out.projects = [...new Set([out.defaultProject, ...(Array.isArray(d.projects) ? d.projects.map(path).filter(Boolean) : [])])];
+  out.todos = d.todos.filter(t => t && typeof t === "object" && str(t.title, 500).trim()).map(t => ({
+    id: str(t.id, 100) || uid(), title: str(t.title, 500).trim(), project: path(t.project) || out.defaultProject,
+    status: STATUS.includes(t.status) ? t.status : "ouvert", prio: [-1, 0, 1].includes(t.prio) ? t.prio : 0,
+    later: t.later === true, notes: str(t.notes, 100000), created: num(t.created), updated: num(t.updated),
+    doneAt: t.status === "fait" ? num(t.doneAt) : null}));
+  out.persistAsked = true;
+  return out;
+}
+
+/* ---------- Installation et mises à jour (version hébergée) ---------- */
+const HOSTED = !IN_ARTIFACT && "serviceWorker" in navigator && window.isSecureContext;
+const STANDALONE = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let installEvent = null;
+function bannerHidden() { try { return localStorage.getItem("pensum.banner") === "off"; } catch (e) { return false; } }
+function installBanner() {
+  if (!HOSTED || STANDALONE || bannerHidden()) return "";
+  if (installEvent) return `<div class="note inst"><p><b>Installer Pensum</b> sur l'écran d'accueil : plein écran, hors ligne, données mieux protégées.</p><button class="btn pri" id="inst-go">Installer</button><button class="btn" id="inst-no">Masquer</button></div>`;
+  if (IOS) return `<div class="note inst"><p><b>Installer Pensum :</b> dans Safari, touche Partager puis « Sur l'écran d'accueil ». Sur iPhone, l'appli installée a ses propres données : installe-la avant de saisir tes todos, ou exporte puis importe-les.</p><button class="btn" id="inst-no">Masquer</button></div>`;
+  return `<div class="note inst"><p><b>Installer Pensum :</b> menu du navigateur, puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</p><button class="btn" id="inst-no">Masquer</button></div>`;
+}
+function wireInstallBanner() {
+  const go = $("#inst-go"), no = $("#inst-no");
+  if (go) go.onclick = async () => { const e = installEvent; installEvent = null; e.prompt(); await e.userChoice.catch(() => {}); render(); };
+  if (no) no.onclick = () => { try { localStorage.setItem("pensum.banner", "off"); } catch (e) {} render(); };
+}
+async function updateApp() {
+  if (!navigator.serviceWorker.controller) { toast("Mise à jour indisponible : rouvre l'appli une fois connecté, puis réessaie."); return; }
+  toast("Recherche d'une mise à jour…");
+  const reg = await navigator.serviceWorker.ready;
+  await reg.update().catch(() => {});
+  const res = await new Promise(ok => {
+    const ch = new MessageChannel();
+    const timer = setTimeout(() => ok({ok: false, error: "pas de réponse, vérifie la connexion"}), 20000);
+    ch.port1.onmessage = e => { clearTimeout(timer); ok(e.data); };
+    navigator.serviceWorker.controller.postMessage({type: "pensum-update"}, [ch.port2]);
+  });
+  if (!res.ok) { toast("Mise à jour impossible, l'appli actuelle reste en place : " + res.error); return; }
+  if (res.version === APP_VERSION) { toast(`Pensum est à jour (version ${APP_VERSION}).`); return; }
+  if (reg.waiting) reg.waiting.postMessage({type: "pensum-activate"});
+  toast(`Version ${res.version} installée.`, null);
+  const el = $("#toast");
+  if (el) { clearTimeout(toastTimer); const b = document.createElement("button"); b.textContent = "Recharger"; b.onclick = () => location.reload(); el.appendChild(b); }
+}
+
+/* ---------- Démarrage ---------- */
+render();
+if (!S.persistAsked && navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(() => {}); S.persistAsked = true; save();
+}
+if (HOSTED) {
+  navigator.serviceWorker.register("sw.js", {updateViaCache: "none"}).catch(() => {});
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvent = e; if (S.active === null) render(); });
+  addEventListener("appinstalled", () => { installEvent = null; if (S.active === null) render(); });
+}
+</script>
+
+</body>
+</html>
